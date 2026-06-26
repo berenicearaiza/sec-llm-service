@@ -29,19 +29,24 @@ class SecEdgar:
     def ticker_to_cik(self, ticker):
         return self.tickerdict.get(ticker.upper())
 
+    # ---------------------------------------------------
+    # MODULE 6: SEC EDGAR API
+    # --------------------------------------------------- 
+
     # Private helpers
     def _get_submissions(self, cik):
         url = f'https://data.sec.gov/submissions/CIK{cik}.json'
         headers = {'User-Agent': 'MLT BAS araizasierra.1@osu.edu'}
         r = requests.get(url, headers=headers)
+        # throw exception if HTTP request is unsuccessful 
         r.raise_for_status()
         return r.json()
     
-    def _build_filing_url(self, cik, accession_number):
+    def _build_filing_url(self, cik, accession_number, primaryDocument):
         accession_no_dash = accession_number.replace('-', '')
         return(
-            f'https://www.sec.gov.Archives/edgar/data/{int(cik)}/'
-            f'{accession_no_dash}/{accession_number}-index.htm'
+            f'https://www.sec.gov/Archives/edgar/data/{int(cik)}/'
+            f'{accession_no_dash}/{primaryDocument}'
         )
 
     # Public Methods
@@ -55,7 +60,8 @@ class SecEdgar:
 
             if form == '10-K' and filing_year == str(year):
                 accession_number = recent['accessionNumber'][i]
-                url = self._build_filing_url(cik, accession_number)
+                primaryDocument = recent['primaryDocument'][i]
+                url = self._build_filing_url(cik, accession_number, primaryDocument)
                 return {
                     'cik': cik,
                     'form': form,
